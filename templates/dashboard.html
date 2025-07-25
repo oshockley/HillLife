@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Progress Dashboard - Hill Life{% endblock %}
+
+{% block content %}
+<!-- Welcome Hero -->
+<section class="py-4" style="background: var(--primary-gradient); color: white;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">WELCOME BACK, {{ session.username.upper() }}! 🏔️</h1>
+                <p class="lead mb-0">Ready to reach your pinnacle? Your adventure journey continues here - let's climb something amazing together!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{{ url_for('add_workout') }}" class="btn btn-light">
+                        <i class="fas fa-plus me-2"></i>LOG ADVENTURE
+                    </a>
+                    <a href="{{ url_for('add_bmi') }}" class="btn btn-outline-light">
+                        <i class="fas fa-heart me-2"></i>TRACK HEALTH
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Overview -->
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ weekly_stats.total_workouts }}</div>
+                    <div class="stat-label">Adventures This Week</div>
+                    <i class="fas fa-mountain position-absolute" style="top: 16px; right: 16px; opacity: 0.3; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="background: var(--success-gradient);">
+                    <div class="stat-number">{{ "%.0f"|format(weekly_stats.total_calories) }}</div>
+                    <div class="stat-label">Calories Burned</div>
+                    <i class="fas fa-fire position-absolute" style="top: 16px; right: 16px; opacity: 0.3; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="background: var(--secondary-gradient);">
+                    <div class="stat-number">{{ weekly_stats.total_duration }}</div>
+                    <div class="stat-label">Minutes Trained</div>
+                    <i class="fas fa-clock position-absolute" style="top: 16px; right: 16px; opacity: 0.3; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="background: var(--dark-gradient);">
+                    <div class="stat-number">{{ weekly_stats.total_sets }}</div>
+                    <div class="stat-label">Total Sets</div>
+                    <i class="fas fa-chart-bar position-absolute" style="top: 16px; right: 16px; opacity: 0.3; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Charts and Recent Activity -->
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Weekly Activity Chart -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>YOUR ADVENTURE JOURNEY
+                        </h5>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary active" data-period="7">7 Days</button>
+                            <button type="button" class="btn btn-outline-primary" data-period="30">30 Days</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="weeklyChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-rocket me-2"></i>ADVENTURE ACTIONS
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-3">
+                            <a href="{{ url_for('add_workout') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>LOG NEW ADVENTURE
+                            </a>
+                            <a href="{{ url_for('add_bmi') }}" class="btn btn-success">
+                                <i class="fas fa-heart me-2"></i>TRACK HEALTH METRICS
+                            </a>
+                            <a href="{{ url_for('workouts') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>VIEW ALL ADVENTURES
+                            </a>
+                            <a href="{{ url_for('export_csv') }}" class="btn btn-outline-success">
+                                <i class="fas fa-download me-2"></i>EXPORT DATA
+                            </a>
+                        </div>
+                        
+                        <!-- Daily Inspiration -->
+                        <div class="mt-4 p-3 rounded" style="background: linear-gradient(135deg, rgba(255, 126, 95, 0.1) 0%, rgba(254, 180, 123, 0.1) 100%); border-left: 4px solid #ff7e5f;">
+                            <i class="fas fa-mountain text-primary mb-2"></i>
+                            <p class="mb-2 fw-500">
+                                {% set quotes = [
+                                    "Every step up the mountain is progress. You're climbing amazingly!",
+                                    "Your body can summit any peak. It's your mind you need to convince.",
+                                    "Progress, not perfection. You're on the right trail.",
+                                    "Small steps every day lead to reaching the summit.",
+                                    "You're stronger than any mountain. Keep climbing!",
+                                    "Believe in yourself. You have the power to reach any peak.",
+                                    "Consistency beats perfection. You're building great climbing habits!",
+                                    "Your future self will thank you for the trails you blaze today."
+                                ] %}
+                                {{ quotes[range(0, quotes|length)|random] }}
+                            </p>
+                            <small class="text-muted">- Your Daily Mountain Wisdom</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Workouts -->
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>YOUR RECENT ADVENTURES
+                        </h5>
+                        <a href="{{ url_for('workouts') }}" class="btn btn-outline-primary btn-sm">
+                            VIEW ALL <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if recent_workouts %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Exercise</th>
+                                            <th>Sets × Reps</th>
+                                            <th>Duration</th>
+                                            <th>Calories</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for workout in recent_workouts %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-dumbbell text-white"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>{{ workout.exercise_name }}</strong>
+                                                        {% if workout.weight %}
+                                                            <br><small class="text-muted">{{ workout.weight }}kg</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ workout.sets }} × {{ workout.reps }}</span>
+                                            </td>
+                                            <td>
+                                                {% if workout.duration %}
+                                                    <i class="fas fa-clock text-primary me-1"></i>{{ workout.duration }}min
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if workout.calories_burned %}
+                                                    <i class="fas fa-fire text-danger me-1"></i>{{ "%.0f"|format(workout.calories_burned) }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">{{ workout.date.strftime('%m/%d %H:%M') }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('edit_workout', workout_id=workout.id) }}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-dumbbell fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">NO WORKOUTS YET</h5>
+                                <p class="text-muted mb-3">Time to start your fitness domination!</p>
+                                <a href="{{ url_for('add_workout') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>LOG YOUR FIRST WORKOUT
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Weekly Activity Chart
+    const ctx = document.getElementById('weeklyChart').getContext('2d');
+    
+    const dailyWorkouts = {{ daily_workouts|tojson|safe }};
+    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const workoutCounts = daysOfWeek.map(day => dailyWorkouts[day] || 0);
+    
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: daysOfWeek,
+            datasets: [{
+                label: 'Workouts',
+                data: workoutCounts,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        color: '#6c757d'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#6c757d'
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverBackgroundColor: '#f5576c'
+                }
+            }
+        }
+    });
+
+    // Period switcher for chart
+    document.querySelectorAll('[data-period]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            document.querySelectorAll('[data-period]').forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const period = this.getAttribute('data-period');
+            
+            // Here you would typically fetch new data via AJAX
+            // For demo purposes, we'll just update the chart title
+            console.log('Fetching data for', period, 'days');
+        });
+    });
+
+    // Add counter animation to stat cards
+    function animateStatCards() {
+        document.querySelectorAll('.stat-number').forEach(stat => {
+            const finalValue = parseInt(stat.textContent);
+            if (isNaN(finalValue)) return;
+            
+            let currentValue = 0;
+            const increment = finalValue / 30;
+            
+            const updateStat = () => {
+                if (currentValue < finalValue) {
+                    currentValue += increment;
+                    stat.textContent = Math.floor(currentValue);
+                    requestAnimationFrame(updateStat);
+                } else {
+                    stat.textContent = finalValue;
+                }
+            };
+            
+            updateStat();
+        });
+    }
+
+    // Trigger animation when page loads
+    window.addEventListener('load', () => {
+        setTimeout(animateStatCards, 300);
+    });
+
+    // Add pulse effect to recent workout rows
+    document.querySelectorAll('tbody tr').forEach((row, index) => {
+        row.style.animationDelay = `${index * 0.1}s`;
+        row.classList.add('fade-in-up');
+    });
+</script>
+
+<style>
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .stat-card:hover {
+        animation: pulse 0.6s ease-in-out;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        transform: translateX(4px);
+    }
+</style>
+{% endblock %}

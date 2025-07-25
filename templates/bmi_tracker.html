@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}BMI & Body Composition Tracker{% endblock %}
+
+{% block content %}
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="display-6 fw-bold" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        <i class="fas fa-heart me-3"></i>YOUR HEALTH JOURNEY
+                    </h1>
+                    <div>
+                        <a href="{{ url_for('add_bmi') }}" class="btn btn-primary me-2">
+                            <i class="fas fa-plus me-2"></i>TRACK PROGRESS
+                        </a>
+                        <a href="{{ url_for('bmi_history') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-history me-2"></i>VIEW HISTORY
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if latest_bmi %}
+        <!-- Current Stats Overview -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ latest_bmi.bmi }}</div>
+                    <div class="stat-label">BMI</div>
+                    <div class="text-white-50 mt-2">{{ latest_bmi.bmi_category }}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card" style="background: var(--success-gradient);">
+                    <div class="stat-number">{{ latest_bmi.body_fat_percentage }}%</div>
+                    <div class="stat-label">Body Fat</div>
+                    <div class="text-white-50 mt-2">Estimated</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card" style="background: var(--secondary-gradient);">
+                    <div class="stat-number">{{ latest_bmi.skeletal_muscle_mass }}kg</div>
+                    <div class="stat-label">Muscle Mass</div>
+                    <div class="text-white-50 mt-2">Skeletal</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="stat-card" style="background: var(--dark-gradient);">
+                    <div class="stat-number">{{ latest_bmi.tdee }}</div>
+                    <div class="stat-label">TDEE</div>
+                    <div class="text-white-50 mt-2">Calories/Day</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analysis -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>BODY COMPOSITION ANALYSIS</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Current Weight</label>
+                                    <div class="fw-bold fs-5">{{ latest_bmi.weight }} kg</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Ideal Weight</label>
+                                    <div class="fw-bold fs-5 text-success">{{ latest_bmi.ideal_weight }} kg</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Lean Body Mass</label>
+                                    <div class="fw-bold fs-5">{{ latest_bmi.lean_body_mass }} kg</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Height</label>
+                                    <div class="fw-bold fs-5">{{ latest_bmi.height }} cm</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">BMR</label>
+                                    <div class="fw-bold fs-5 text-info">{{ latest_bmi.bmr }} cal/day</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Body Type</label>
+                                    <div class="fw-bold fs-5">{{ latest_bmi.body_type or 'Not specified' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress to ideal weight -->
+                        {% if latest_bmi.weight != latest_bmi.ideal_weight %}
+                        <div class="mt-4">
+                            <label class="form-label">Progress to Ideal Weight</label>
+                            {% set weight_diff = latest_bmi.weight - latest_bmi.ideal_weight %}
+                            {% if weight_diff > 0 %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-arrow-down me-2"></i>
+                                    <strong>{{ "%.1f"|format(weight_diff) }} kg to lose</strong> to reach ideal weight
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-arrow-up me-2"></i>
+                                    <strong>{{ "%.1f"|format(-weight_diff) }} kg to gain</strong> to reach ideal weight
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-fire me-2"></i>METABOLIC INFORMATION</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label">Activity Level</label>
+                            <div class="fw-bold fs-5 text-capitalize">{{ latest_bmi.activity_level.replace('_', ' ') }}</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Calorie Recommendations:</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <div class="fw-bold text-danger">{{ latest_bmi.tdee - 500 }}</div>
+                                        <small>Weight Loss</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <div class="fw-bold text-success">{{ latest_bmi.tdee + 300 }}</div>
+                                        <small>Weight Gain</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="fw-bold">BMI Categories:</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                {% set bmi_percentage = (latest_bmi.bmi / 40) * 100 %}
+                                <div class="progress-bar" style="width: {{ bmi_percentage }}%; background: linear-gradient(135deg, #ff7e5f, #feb47b);">
+                                    {{ latest_bmi.bmi }}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-info">18.5</span>
+                                <span class="text-success">25</span>
+                                <span class="text-warning">30</span>
+                                <span class="text-danger">40+</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Charts -->
+        {% if bmi_history|length > 1 %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>PROGRESS TRACKING</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="progressChart" width="400" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- No data state -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card text-center py-5">
+                    <div class="card-body">
+                        <i class="fas fa-weight fa-4x text-muted mb-4"></i>
+                        <h3 class="fw-bold mb-3">START YOUR BODY COMPOSITION JOURNEY</h3>
+                        <p class="lead mb-4">Track your BMI, body fat percentage, muscle mass, and more with our comprehensive analysis tool.</p>
+                        <a href="{{ url_for('add_bmi') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>ADD YOUR FIRST ANALYSIS
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+{% if bmi_history|length > 1 %}
+// Create progress chart
+const ctx = document.getElementById('progressChart').getContext('2d');
+const bmiData = [
+    {% for record in bmi_history|reverse %}
+    {
+        date: '{{ record.date_recorded.strftime("%m/%d") }}',
+        weight: {{ record.weight }},
+        bmi: {{ record.bmi }},
+        bodyFat: {{ record.body_fat_percentage }},
+        muscleMass: {{ record.skeletal_muscle_mass }}
+    },
+    {% endfor %}
+];
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: bmiData.map(d => d.date),
+        datasets: [
+            {
+                label: 'Weight (kg)',
+                data: bmiData.map(d => d.weight),
+                borderColor: '#ff7e5f',
+                backgroundColor: 'rgba(255, 126, 95, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            },
+            {
+                label: 'BMI',
+                data: bmiData.map(d => d.bmi),
+                borderColor: '#feb47b',
+                backgroundColor: 'rgba(254, 180, 123, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
+                yAxisID: 'y1'
+            },
+            {
+                label: 'Body Fat %',
+                data: bmiData.map(d => d.bodyFat),
+                borderColor: '#ff9068',
+                backgroundColor: 'rgba(255, 144, 104, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
+                yAxisID: 'y1'
+            },
+            {
+                label: 'Muscle Mass (kg)',
+                data: bmiData.map(d => d.muscleMass),
+                borderColor: '#fd746c',
+                backgroundColor: 'rgba(253, 116, 108, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: false,
+                title: {
+                    display: true,
+                    text: 'Weight / Muscle Mass (kg)'
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'BMI / Body Fat %'
+                },
+                grid: {
+                    drawOnChartArea: false,
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Body Composition Progress'
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,650 @@
+{% extends "base.html" %}
+
+{% block title %}Log Adventure - Hill Life{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4" style="background: var(--success-gradient); color: white;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-plus me-3"></i>LOG YOUR ADVENTURE
+                </h1>
+                <p class="lead mb-0">Great job on completing your adventure! Let's record your progress and celebrate your effort.</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('workouts') }}" class="btn btn-light">
+                    <i class="fas fa-list me-2"></i>VIEW ADVENTURES
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Workout Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-mountain me-2"></i>ADVENTURE DETAILS
+                        </h4>
+                        <p class="text-muted mb-0 mt-2">Fill in the details of your awesome adventure session!</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" id="workoutForm">
+                            <!-- Workout Type Selector -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-12">
+                                    <label class="form-label">Adventure Type</label>
+                                    <div class="btn-group w-100" role="group" id="workoutTypeGroup">
+                                        <input type="radio" class="btn-check" name="workout_type" id="strength" value="strength" checked>
+                                        <label class="btn btn-outline-primary" for="strength">
+                                            <i class="fas fa-dumbbell me-2"></i>STRENGTH
+                                        </label>
+
+                                        <input type="radio" class="btn-check" name="workout_type" id="cardio" value="cardio">
+                                        <label class="btn btn-outline-primary" for="cardio">
+                                            <i class="fas fa-heartbeat me-2"></i>CARDIO
+                                        </label>
+
+                                        <input type="radio" class="btn-check" name="workout_type" id="walking" value="walking">
+                                        <label class="btn btn-outline-primary" for="walking">
+                                            <i class="fas fa-walking me-2"></i>WALKING
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-4">
+                                <!-- Exercise Name -->
+                                <div class="col-md-12">
+                                    <label for="exercise_name" class="form-label">Exercise Name</label>
+                                    <input type="text" class="form-control form-control-lg" id="exercise_name" 
+                                           name="exercise_name" required placeholder="e.g., Push-ups, Treadmill Walking, Running"
+                                           list="exerciseList">
+                                    <datalist id="exerciseList">
+                                        <!-- Strength exercises -->
+                                        <option value="Push-ups" data-type="strength">
+                                        <option value="Pull-ups" data-type="strength">
+                                        <option value="Squats" data-type="strength">
+                                        <option value="Deadlift" data-type="strength">
+                                        <option value="Bench Press" data-type="strength">
+                                        <!-- Cardio exercises -->
+                                        <option value="Running" data-type="cardio">
+                                        <option value="Cycling" data-type="cardio">
+                                        <option value="Rowing" data-type="cardio">
+                                        <option value="Burpees" data-type="cardio">
+                                        <!-- Walking exercises -->
+                                        <option value="Treadmill Walking" data-type="walking">
+                                        <option value="Outdoor Walking" data-type="walking">
+                                        <option value="Incline Walking" data-type="walking">
+                                        <option value="Power Walking" data-type="walking">
+                                    </datalist>
+                                    <div class="form-text">Choose from popular exercises or add your own</div>
+                                </div>
+
+                                <!-- Strength/General Fields -->
+                                <div class="strength-fields">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label for="sets" class="form-label">Sets</label>
+                                            <input type="number" class="form-control form-control-lg" id="sets" 
+                                                   name="sets" min="1" max="50" placeholder="3" value="1">
+                                            <div class="form-text">Number of sets completed</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="reps" class="form-label">Reps</label>
+                                            <input type="number" class="form-control form-control-lg" id="reps" 
+                                                   name="reps" min="1" max="1000" placeholder="12" value="1">
+                                            <div class="form-text">Reps per set (average if varied)</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="weight" class="form-label">Weight (kg)</label>
+                                            <input type="number" class="form-control form-control-lg" id="weight" 
+                                                   name="weight" min="0" max="1000" step="0.5" placeholder="50">
+                                            <div class="form-text">Weight used (optional)</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Walking/Cardio Specific Fields -->
+                                <div class="cardio-fields" style="display: none;">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label for="speed" class="form-label">Speed (mph)</label>
+                                            <input type="number" class="form-control form-control-lg" id="speed" 
+                                                   name="speed" min="0" max="30" step="0.1" placeholder="3.5">
+                                            <div class="form-text">Average speed during workout</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="incline" class="form-label">Incline (%)</label>
+                                            <input type="number" class="form-control form-control-lg" id="incline" 
+                                                   name="incline" min="0" max="45" step="0.5" placeholder="5.0">
+                                            <div class="form-text">Incline percentage (0% = flat)</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="distance" class="form-label">Distance (miles)</label>
+                                            <input type="number" class="form-control form-control-lg" id="distance" 
+                                                   name="distance" min="0" max="100" step="0.1" placeholder="2.5">
+                                            <div class="form-text">Total distance covered</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="avg_heart_rate" class="form-label">Avg Heart Rate (BPM)</label>
+                                            <input type="number" class="form-control form-control-lg" id="avg_heart_rate" 
+                                                   name="avg_heart_rate" min="40" max="220" placeholder="140">
+                                            <div class="form-text">Average heart rate during workout</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Common Fields -->
+                                <div class="col-md-6">
+                                    <label for="duration" class="form-label">Duration (minutes)</label>
+                                    <input type="number" class="form-control form-control-lg" id="duration" 
+                                           name="duration" min="1" max="1440" placeholder="30">
+                                    <div class="form-text">Total workout time</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="calories_burned" class="form-label">Calories Burned</label>
+                                    <input type="number" class="form-control form-control-lg" id="calories_burned" 
+                                           name="calories_burned" min="0" max="10000" placeholder="300">
+                                    <div class="form-text">Estimated calories burned</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="date" class="form-label">Date</label>
+                                    <input type="date" class="form-control form-control-lg" id="date" 
+                                           name="date" value="{{ datetime.now().strftime('%Y-%m-%d') }}">
+                                    <div class="form-text">When did you complete this workout?</div>
+                                </div>
+
+                                <!-- Notes -->
+                                <div class="col-12">
+                                    <label for="notes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                              placeholder="How did it feel? Any observations? Record your thoughts..."></textarea>
+                                    <div class="form-text">Add any additional notes about your workout</div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                        <button type="submit" class="btn btn-success btn-lg me-md-2">
+                                            <i class="fas fa-save me-2"></i>LOG THIS DOMINATION
+                                        </button>
+                                        <a href="{{ url_for('workouts') }}" class="btn btn-outline-secondary btn-lg">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Enhanced Workout Preview -->
+                <div class="card mt-4" id="statsPreview" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>WORKOUT PREVIEW
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 col-md-3">
+                                <div class="border-end">
+                                    <div class="h4 text-primary mb-0" id="previewVolume">0</div>
+                                    <small class="text-muted" id="previewVolumeLabel">Volume/Distance</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border-end">
+                                    <div class="h4 text-success mb-0" id="previewCalories">0</div>
+                                    <small class="text-muted">Calories</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border-end">
+                                    <div class="h4 text-info mb-0" id="previewDuration">0</div>
+                                    <small class="text-muted">Minutes</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="h4 text-warning mb-0" id="previewIntensity">-</div>
+                                <small class="text-muted">Intensity</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Walking-specific metrics -->
+                        <div class="walking-metrics mt-3" style="display: none;">
+                            <hr>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="h6 text-primary mb-0" id="previewSpeed">-</div>
+                                    <small class="text-muted">Speed (mph)</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h6 text-danger mb-0" id="previewIncline">-</div>
+                                    <small class="text-muted">Incline (%)</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h6 text-success mb-0" id="previewPace">-</div>
+                                    <small class="text-muted">Pace (min/mi)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Motivational Tips -->
+                <div class="card mt-4" style="background: var(--primary-gradient); color: white;">
+                    <div class="card-body p-4">
+                        <h5 class="card-title">
+                            <i class="fas fa-lightbulb me-2"></i>PRO TIPS FOR DOMINATION
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-dumbbell me-2"></i>Strength Training</h6>
+                                <ul class="list-unstyled mb-3">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle me-2"></i>Log immediately after your workout
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle me-2"></i>Track progressive overload
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-walking me-2"></i>Walking/Cardio</h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle me-2"></i>Increase incline for intensity
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle me-2"></i>Monitor your heart rate
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 rounded" style="background: rgba(255,255,255,0.1);">
+                            <small>
+                                <strong>Walking Intensity Guide:</strong> 
+                                Low (2-3 mph) • Moderate (3.5-4 mph) • High (4.5+ mph) • Add 5%+ incline for extra challenge!
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control:focus {
+        border-color: #4facfe;
+        box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+        transform: scale(1.02);
+    }
+
+    .form-control-lg {
+        padding: 16px 20px;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .form-label {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        color: var(--text-primary);
+    }
+
+    .form-text {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    #statsPreview {
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .border-end {
+        border-right: 2px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    @media (max-width: 768px) {
+        .border-end {
+            border-right: none !important;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1) !important;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set current date as default
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Workout type switching
+    const strengthFields = document.querySelector('.strength-fields');
+    const cardioFields = document.querySelector('.cardio-fields');
+    const workoutTypeInputs = document.querySelectorAll('input[name="workout_type"]');
+    const setsInput = document.getElementById('sets');
+    const repsInput = document.getElementById('reps');
+
+    function switchWorkoutType(type) {
+        strengthFields.style.display = 'none';
+        cardioFields.style.display = 'none';
+        
+        if (type === 'strength') {
+            strengthFields.style.display = 'block';
+            setsInput.required = true;
+            repsInput.required = true;
+        } else if (type === 'cardio' || type === 'walking') {
+            cardioFields.style.display = 'block';
+            setsInput.required = false;
+            repsInput.required = false;
+            // Set default values for cardio
+            if (!setsInput.value || setsInput.value === '1') setsInput.value = '1';
+            if (!repsInput.value || repsInput.value === '1') repsInput.value = '1';
+        }
+        
+        updatePreview();
+    }
+
+    // Add event listeners for workout type change
+    workoutTypeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            switchWorkoutType(this.value);
+        });
+    });
+
+    // Initialize with strength type
+    switchWorkoutType('strength');
+
+    // Auto-suggest exercise based on type
+    document.getElementById('exercise_name').addEventListener('input', function() {
+        const selectedType = document.querySelector('input[name="workout_type"]:checked').value;
+        const exerciseName = this.value.toLowerCase();
+        
+        // Auto-switch workout type based on exercise name
+        if (exerciseName.includes('walk') || exerciseName.includes('treadmill')) {
+            document.getElementById('walking').checked = true;
+            switchWorkoutType('walking');
+        } else if (exerciseName.includes('run') || exerciseName.includes('cycle') || exerciseName.includes('cardio')) {
+            document.getElementById('cardio').checked = true;
+            switchWorkoutType('cardio');
+        }
+    });
+
+    // Enhanced calorie calculation including walking metrics
+    function calculateWalkingCalories() {
+        const duration = parseInt(document.getElementById('duration').value) || 0;
+        const speed = parseFloat(document.getElementById('speed').value) || 0;
+        const incline = parseFloat(document.getElementById('incline').value) || 0;
+        const workoutType = document.querySelector('input[name="workout_type"]:checked').value;
+        
+        if (duration === 0 || (workoutType === 'walking' && speed === 0)) return;
+
+        let caloriesPerMinute = 5; // Default
+        
+        if (workoutType === 'walking' && speed > 0) {
+            // Walking calorie calculation (rough estimate for 150lb person)
+            caloriesPerMinute = 3.5 + (speed * 0.5); // Base walking calories
+            
+            // Add incline bonus
+            if (incline > 0) {
+                caloriesPerMinute += (incline * 0.3); // Extra calories for incline
+            }
+            
+            // Speed bonus for power walking
+            if (speed > 4) {
+                caloriesPerMinute += (speed - 4) * 0.8;
+            }
+        } else {
+            // Use the existing calculation for other exercises
+            const exercise = document.getElementById('exercise_name').value.toLowerCase();
+            if (exercise.includes('running')) caloriesPerMinute = 12;
+            else if (exercise.includes('cycling')) caloriesPerMinute = 8;
+            else if (exercise.includes('swimming')) caloriesPerMinute = 10;
+            else if (exercise.includes('burpee')) caloriesPerMinute = 15;
+        }
+
+        const estimatedCalories = Math.round(duration * caloriesPerMinute);
+        
+        // Only auto-fill if calories field is empty
+        const caloriesInput = document.getElementById('calories_burned');
+        if (!caloriesInput.value) {
+            caloriesInput.value = estimatedCalories;
+            updatePreview();
+        }
+    }
+
+    // Auto-calculate distance based on speed and duration
+    function calculateDistance() {
+        const duration = parseInt(document.getElementById('duration').value) || 0;
+        const speed = parseFloat(document.getElementById('speed').value) || 0;
+        const distanceInput = document.getElementById('distance');
+        
+        if (duration > 0 && speed > 0 && !distanceInput.value) {
+            const estimatedDistance = (speed * (duration / 60)).toFixed(2);
+            distanceInput.value = estimatedDistance;
+        }
+    }
+
+    // Form validation and preview
+    const form = document.getElementById('workoutForm');
+    const statsPreview = document.getElementById('statsPreview');
+    
+    // Input elements
+    const exerciseName = document.getElementById('exercise_name');
+    const sets = document.getElementById('sets');
+    const reps = document.getElementById('reps');
+    const weight = document.getElementById('weight');
+    const duration = document.getElementById('duration');
+    const calories = document.getElementById('calories_burned');
+    const speed = document.getElementById('speed');
+    const incline = document.getElementById('incline');
+    const distance = document.getElementById('distance');
+
+    // Preview elements
+    const previewVolume = document.getElementById('previewVolume');
+    const previewCalories = document.getElementById('previewCalories');
+    const previewDuration = document.getElementById('previewDuration');
+    const previewIntensity = document.getElementById('previewIntensity');
+
+    function updatePreview() {
+        const workoutType = document.querySelector('input[name="workout_type"]:checked').value;
+        const setsVal = parseInt(sets.value) || 0;
+        const repsVal = parseInt(reps.value) || 0;
+        const weightVal = parseFloat(weight.value) || 0;
+        const durationVal = parseInt(duration.value) || 0;
+        const caloriesVal = parseInt(calories.value) || 0;
+        const speedVal = parseFloat(speed.value) || 0;
+        const inclineVal = parseFloat(incline.value) || 0;
+        const distanceVal = parseFloat(distance.value) || 0;
+
+        const walkingMetrics = document.querySelector('.walking-metrics');
+        const previewSpeed = document.getElementById('previewSpeed');
+        const previewIncline = document.getElementById('previewIncline');
+        const previewPace = document.getElementById('previewPace');
+
+        // Calculate metrics based on workout type
+        if (workoutType === 'strength') {
+            // Calculate total volume (sets × reps × weight)
+            const volume = setsVal * repsVal * weightVal;
+            previewVolume.textContent = volume > 0 ? volume.toLocaleString() + ' kg' : '-';
+            walkingMetrics.style.display = 'none';
+        } else if (workoutType === 'walking' || workoutType === 'cardio') {
+            // Show distance or speed info
+            if (distanceVal > 0) {
+                previewVolume.textContent = distanceVal + ' mi';
+            } else if (speedVal > 0) {
+                previewVolume.textContent = speedVal + ' mph';
+            } else {
+                previewVolume.textContent = '-';
+            }
+            
+            // Show walking-specific metrics
+            if (workoutType === 'walking') {
+                walkingMetrics.style.display = 'block';
+                previewSpeed.textContent = speedVal > 0 ? speedVal : '-';
+                previewIncline.textContent = inclineVal > 0 ? inclineVal + '%' : '-';
+                
+                // Calculate pace (min/mile)
+                if (speedVal > 0) {
+                    const pace = (60 / speedVal).toFixed(1);
+                    previewPace.textContent = pace;
+                } else {
+                    previewPace.textContent = '-';
+                }
+            } else {
+                walkingMetrics.style.display = 'none';
+            }
+        }
+
+        // Display calories
+        previewCalories.textContent = caloriesVal > 0 ? caloriesVal : '-';
+
+        // Display duration
+        previewDuration.textContent = durationVal > 0 ? durationVal + ' min' : '-';
+
+        // Calculate intensity
+        let intensity = '-';
+        if (workoutType === 'walking' || workoutType === 'cardio') {
+            if (speedVal > 0) {
+                if (speedVal >= 5) intensity = 'HIGH';
+                else if (speedVal >= 3) intensity = 'MED';
+                else intensity = 'LOW';
+                
+                // Factor in incline for walking
+                if (workoutType === 'walking' && inclineVal > 10) {
+                    intensity = 'HIGH';
+                } else if (workoutType === 'walking' && inclineVal > 5) {
+                    intensity = intensity === 'LOW' ? 'MED' : 'HIGH';
+                }
+            }
+        } else {
+            // Original calculation for strength
+            if (caloriesVal > 0 && durationVal > 0) {
+                const calsPerMin = caloriesVal / durationVal;
+                if (calsPerMin > 10) intensity = 'HIGH';
+                else if (calsPerMin > 5) intensity = 'MED';
+                else intensity = 'LOW';
+            }
+        }
+        previewIntensity.textContent = intensity;
+
+        // Show/hide preview based on meaningful data
+        const hasData = (workoutType === 'strength' && setsVal > 0 && repsVal > 0) ||
+                       (workoutType !== 'strength' && durationVal > 0);
+        
+        if (hasData) {
+            statsPreview.style.display = 'block';
+        } else {
+            statsPreview.style.display = 'none';
+        }
+    }
+
+    // Add event listeners for real-time preview
+    [sets, reps, weight, duration, calories, speed, incline, distance].forEach(input => {
+        input.addEventListener('input', updatePreview);
+    });
+
+    // Enhanced event listeners
+    speed.addEventListener('change', calculateDistance);
+    duration.addEventListener('change', function() {
+        calculateDistance();
+        calculateWalkingCalories();
+    });
+    speed.addEventListener('change', calculateWalkingCalories);
+    incline.addEventListener('change', calculateWalkingCalories);
+    exerciseName.addEventListener('change', calculateWalkingCalories);
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        // Validation
+        if (!exerciseName.value.trim()) {
+            e.preventDefault();
+            alert('Please enter an exercise name!');
+            exerciseName.focus();
+            return;
+        }
+
+        const workoutType = document.querySelector('input[name="workout_type"]:checked').value;
+        
+        if (workoutType === 'strength') {
+            if (parseInt(sets.value) <= 0 || parseInt(reps.value) <= 0) {
+                e.preventDefault();
+                alert('Sets and reps must be greater than 0 for strength workouts!');
+                return;
+            }
+        } else {
+            // For cardio/walking, duration is more important
+            if (!duration.value || parseInt(duration.value) <= 0) {
+                e.preventDefault();
+                alert('Duration must be greater than 0 for cardio/walking workouts!');
+                duration.focus();
+                return;
+            }
+        }
+
+        // Success feedback
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>LOGGING DOMINATION...';
+        submitBtn.disabled = true;
+
+        // Visual feedback
+        form.style.opacity = '0.7';
+        form.style.pointerEvents = 'none';
+    });
+
+    // Add focus effects
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.closest('.col-12, .col-md-6, .col-md-12').style.transform = 'scale(1.02)';
+            this.closest('.col-12, .col-md-6, .col-md-12').style.transition = 'all 0.3s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.closest('.col-12, .col-md-6, .col-md-12').style.transform = 'scale(1)';
+        });
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            form.submit();
+        }
+    });
+</script>
+{% endblock %}

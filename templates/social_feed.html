@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Adventure Community - Hill Life{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4" style="background: var(--primary-gradient); color: white;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-users me-3"></i>ADVENTURE COMMUNITY
+                </h1>
+                <p class="lead mb-0">Connect with fellow climbers, share your progress, and conquer new heights together!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{{ url_for('friends_list') }}" class="btn btn-light">
+                        <i class="fas fa-user-friends me-2"></i>FRIENDS
+                    </a>
+                    <a href="{{ url_for('search_users') }}" class="btn btn-outline-light">
+                        <i class="fas fa-search me-2"></i>FIND FRIENDS
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Friend Requests Alert -->
+{% if pending_requests %}
+<section class="py-3">
+    <div class="container">
+        <div class="alert alert-info">
+            <h6 class="alert-heading mb-2">
+                <i class="fas fa-bell me-2"></i>Friend Requests ({{ pending_requests|length }})
+            </h6>
+            <div class="d-flex flex-wrap gap-2">
+                {% for request in pending_requests %}
+                <div class="d-flex align-items-center bg-white rounded p-2">
+                    <strong>{{ request.sender.username }}</strong>
+                    <div class="ms-2">
+                        <a href="{{ url_for('respond_friend_request', request_id=request.id, action='accept') }}" 
+                           class="btn btn-sm btn-success me-1">Accept</a>
+                        <a href="{{ url_for('respond_friend_request', request_id=request.id, action='decline') }}" 
+                           class="btn btn-sm btn-outline-secondary">Decline</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Feed Content -->
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <!-- Main Feed -->
+            <div class="col-lg-8">
+                {% if shared_workouts %}
+                    {% for share in shared_workouts %}
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">
+                                        <a href="{{ url_for('user_profile', username=share.sharer.username) }}" 
+                                           class="text-decoration-none">{{ share.sharer.username }}</a>
+                                    </h6>
+                                    <small class="text-muted">{{ share.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                            </div>
+                            {% if share.is_public %}
+                                <span class="badge bg-success">Public</span>
+                            {% else %}
+                                <span class="badge bg-primary">Friends</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body">
+                            {% if share.caption %}
+                            <p class="mb-3">{{ share.caption }}</p>
+                            {% endif %}
+                            
+                            <!-- Workout Details -->
+                            <div class="bg-light rounded p-3 mb-3">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-2">
+                                            <i class="fas fa-dumbbell me-2"></i>{{ share.workout.exercise_name }}
+                                        </h6>
+                                        <div class="small text-muted">
+                                            <div><strong>Type:</strong> {{ share.workout.workout_type.title() }}</div>
+                                            <div><strong>Date:</strong> {{ share.workout.date.strftime('%Y-%m-%d') }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="row g-2 text-center">
+                                            {% if share.workout.sets %}
+                                            <div class="col-4">
+                                                <div class="stat-mini">
+                                                    <div class="stat-number-mini">{{ share.workout.sets }}</div>
+                                                    <div class="stat-label-mini">Sets</div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if share.workout.reps %}
+                                            <div class="col-4">
+                                                <div class="stat-mini">
+                                                    <div class="stat-number-mini">{{ share.workout.reps }}</div>
+                                                    <div class="stat-label-mini">Reps</div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if share.workout.duration %}
+                                            <div class="col-4">
+                                                <div class="stat-mini">
+                                                    <div class="stat-number-mini">{{ share.workout.duration }}</div>
+                                                    <div class="stat-label-mini">Min</div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if share.workout.calories_burned %}
+                                            <div class="col-6">
+                                                <div class="stat-mini">
+                                                    <div class="stat-number-mini">{{ "%.0f"|format(share.workout.calories_burned) }}</div>
+                                                    <div class="stat-label-mini">Calories</div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if share.workout.distance %}
+                                            <div class="col-6">
+                                                <div class="stat-mini">
+                                                    <div class="stat-number-mini">{{ "%.1f"|format(share.workout.distance) }}</div>
+                                                    <div class="stat-label-mini">Miles</div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Interaction Buttons -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-3">
+                                    <form method="POST" action="{{ url_for('like_workout', share_id=share.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-link p-0 text-decoration-none">
+                                            <i class="fas fa-heart me-1 text-danger"></i>
+                                            <span class="like-count">{{ share.likes|length }}</span> likes
+                                        </button>
+                                    </form>
+                                    <span class="text-muted">
+                                        <i class="fas fa-comment me-1"></i>{{ share.comments|length }} comments
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Comments Section -->
+                            {% if share.comments %}
+                            <div class="mt-3 pt-3 border-top">
+                                {% for comment in share.comments[-3:] %}
+                                <div class="d-flex mb-2">
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-user text-white small"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="bg-light rounded p-2">
+                                            <strong class="small">{{ comment.user.username }}</strong>
+                                            <p class="mb-0 small">{{ comment.comment_text }}</p>
+                                        </div>
+                                        <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Add Comment -->
+                            <form method="POST" action="{{ url_for('comment_workout', share_id=share.id) }}" class="mt-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="comment" placeholder="Add a comment..." required>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h4>No activity yet!</h4>
+                        <p class="text-muted">Add friends and share your workouts to see activity here.</p>
+                        <a href="{{ url_for('search_users') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Find Friends
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Stats -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Your Stats This Week
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 text-center">
+                            <div class="col-6">
+                                <div class="stat-mini">
+                                    <div class="stat-number-mini">{{ current_user.workouts|length }}</div>
+                                    <div class="stat-label-mini">Total Workouts</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-mini">
+                                    <div class="stat-number-mini">{{ current_user.get_friends()|length }}</div>
+                                    <div class="stat-label-mini">Friends</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Friends -->
+                {% set friends = current_user.get_friends() %}
+                {% if friends %}
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-user-friends me-2"></i>Your Friends
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        {% for friend in friends[:5] %}
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px;">
+                                <i class="fas fa-user text-white small"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <a href="{{ url_for('user_profile', username=friend.username) }}" 
+                                   class="text-decoration-none fw-medium">{{ friend.username }}</a>
+                                <div class="small text-muted">{{ friend.workouts|length }} workouts</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if friends|length > 5 %}
+                        <a href="{{ url_for('friends_list') }}" class="btn btn-outline-primary btn-sm w-100 mt-2">
+                            View All Friends
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-mini {
+    text-align: center;
+}
+
+.stat-number-mini {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-label-mini {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #6c757d;
+    letter-spacing: 0.5px;
+}
+
+.card {
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

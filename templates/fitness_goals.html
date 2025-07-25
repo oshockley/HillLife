@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Summit Goals - Hill Life{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4" style="background: var(--dark-gradient); color: white;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-mountain me-3"></i>YOUR SUMMIT GOALS
+                </h1>
+                <p class="lead mb-0">Set ambitious peaks to conquer, track your ascent, and celebrate every victory on your Hill Life journey!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('add_fitness_goal') }}" class="btn btn-light">
+                    <i class="fas fa-plus me-2"></i>NEW GOAL
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Content -->
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <!-- Your Goals -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bullseye me-2"></i>Your Goals ({{ goals|length }})
+                        </h5>
+                        <a href="{{ url_for('add_fitness_goal') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Goal
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if goals %}
+                            <div class="row g-4">
+                                {% for goal in goals %}
+                                <div class="col-md-6">
+                                    <div class="card border h-100 {% if goal.status == 'completed' %}border-success{% elif goal.status == 'paused' %}border-warning{% else %}border-primary{% endif %}">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">{{ goal.title }}</h6>
+                                            <span class="badge {% if goal.status == 'completed' %}bg-success{% elif goal.status == 'paused' %}bg-warning{% else %}bg-primary{% endif %}">
+                                                {{ goal.status.title() }}
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if goal.description %}
+                                            <p class="text-muted small">{{ goal.description }}</p>
+                                            {% endif %}
+                                            
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between text-sm mb-1">
+                                                    <span>Progress</span>
+                                                    <span>
+                                                        {% if goal.target_value %}
+                                                            {{ goal.current_value or 0 }} / {{ goal.target_value }} {{ goal.unit }}
+                                                        {% else %}
+                                                            In Progress
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                {% if goal.target_value %}
+                                                    {% set progress_percentage = ((goal.current_value or 0) / goal.target_value * 100) | round %}
+                                                    <div class="progress">
+                                                        <div class="progress-bar {% if goal.status == 'completed' %}bg-success{% else %}bg-primary{% endif %}" 
+                                                             style="width: {{ [progress_percentage, 100] | min }}%">
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center mt-1">
+                                                        <small class="text-muted">{{ [progress_percentage, 100] | min }}% Complete</small>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="row g-2 text-center mb-3">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Type</small>
+                                                    <div class="fw-medium">{{ goal.goal_type.replace('_', ' ').title() }}</div>
+                                                </div>
+                                                {% if goal.target_date %}
+                                                <div class="col-6">
+                                                    <small class="text-muted">Target Date</small>
+                                                    <div class="fw-medium">{{ goal.target_date.strftime('%b %d, %Y') }}</div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            {% if goal.status != 'completed' %}
+                                            <form method="POST" action="{{ url_for('update_goal_progress', goal_id=goal.id) }}" class="mb-2">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" class="form-control" name="current_value" 
+                                                           value="{{ goal.current_value or 0 }}" step="0.1" min="0"
+                                                           placeholder="Update progress">
+                                                    <span class="input-group-text">{{ goal.unit }}</span>
+                                                    <button type="submit" class="btn btn-outline-primary">Update</button>
+                                                </div>
+                                            </form>
+                                            {% endif %}
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    {% if goal.is_public %}
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-globe me-1"></i>Public
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">
+                                                            <i class="fas fa-lock me-1"></i>Private
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                                <small class="text-muted">
+                                                    Created {{ goal.created_at.strftime('%b %d') }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-target fa-3x text-muted mb-3"></i>
+                                <h5>No goals set yet!</h5>
+                                <p class="text-muted">Create your first fitness goal to start tracking your progress.</p>
+                                <a href="{{ url_for('add_fitness_goal') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Create Your First Goal
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Friends' Goals Sidebar -->
+            <div class="col-lg-4">
+                {% if friends_goals %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-users me-2"></i>Friends' Goals
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        {% for goal in friends_goals %}
+                        <div class="mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                    <i class="fas fa-user text-white small"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-medium">{{ goal.user.username }}</div>
+                                    <small class="text-muted">{{ goal.title }}</small>
+                                </div>
+                            </div>
+                            {% if goal.target_value %}
+                                {% set progress_percentage = ((goal.current_value or 0) / goal.target_value * 100) | round %}
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-success" style="width: {{ [progress_percentage, 100] | min }}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">{{ [progress_percentage, 100] | min }}% complete</small>
+                                    <small class="text-muted">{{ goal.current_value or 0 }}/{{ goal.target_value }} {{ goal.unit }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Goal Categories -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>Goal Ideas
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <div class="p-2 bg-light rounded mb-2">
+                                    <i class="fas fa-weight text-primary me-2"></i>
+                                    <strong>Weight Goals</strong>
+                                    <div class="small text-muted">Lose 10 lbs, Gain muscle mass</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-2 bg-light rounded mb-2">
+                                    <i class="fas fa-running text-success me-2"></i>
+                                    <strong>Cardio Goals</strong>
+                                    <div class="small text-muted">Run 5K, Walk 10,000 steps daily</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-2 bg-light rounded mb-2">
+                                    <i class="fas fa-dumbbell text-warning me-2"></i>
+                                    <strong>Strength Goals</strong>
+                                    <div class="small text-muted">Bench 200 lbs, 50 push-ups</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-2 bg-light rounded">
+                                    <i class="fas fa-calendar text-info me-2"></i>
+                                    <strong>Habit Goals</strong>
+                                    <div class="small text-muted">Workout 4x/week, Healthy meals</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="{{ url_for('add_fitness_goal') }}" class="btn btn-outline-primary btn-sm w-100 mt-3">
+                            <i class="fas fa-plus me-1"></i>Create New Goal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.progress-sm {
+    height: 6px;
+}
+
+.card-header {
+    background: rgba(255, 248, 237, 0.5);
+}
+</style>
+{% endblock %}

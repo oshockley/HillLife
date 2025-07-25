@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Set New Summit - Hill Life{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4" style="background: var(--dark-gradient); color: white;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-plus me-3"></i>CREATE NEW GOAL
+                </h1>
+                <p class="lead mb-0">Set a clear target and watch yourself achieve amazing things!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('fitness_goals') }}" class="btn btn-light">
+                    <i class="fas fa-list me-2"></i>VIEW GOALS
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Goal Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-target me-2"></i>Goal Details
+                        </h5>
+                        <p class="text-muted mb-0 mt-2">Create a specific, measurable goal that motivates you!</p>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="row g-4">
+                                <!-- Goal Title -->
+                                <div class="col-12">
+                                    <label for="title" class="form-label">
+                                        <i class="fas fa-flag me-2"></i>Goal Title *
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="title" name="title" 
+                                           required placeholder="e.g., Lose 15 pounds, Run a 5K, Bench press 200 lbs">
+                                    <div class="form-text">Make it specific and inspiring!</div>
+                                </div>
+                                
+                                <!-- Goal Type -->
+                                <div class="col-md-6">
+                                    <label for="goal_type" class="form-label">
+                                        <i class="fas fa-category me-2"></i>Goal Type *
+                                    </label>
+                                    <select class="form-select" id="goal_type" name="goal_type" required>
+                                        <option value="">Choose goal type...</option>
+                                        <option value="weight_loss">Weight Loss</option>
+                                        <option value="muscle_gain">Muscle Gain</option>
+                                        <option value="strength">Strength Building</option>
+                                        <option value="endurance">Endurance/Cardio</option>
+                                        <option value="flexibility">Flexibility</option>
+                                        <option value="habit">Healthy Habits</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Target Date -->
+                                <div class="col-md-6">
+                                    <label for="target_date" class="form-label">
+                                        <i class="fas fa-calendar me-2"></i>Target Date
+                                    </label>
+                                    <input type="date" class="form-control" id="target_date" name="target_date"
+                                           min="{{ today }}">
+                                    <div class="form-text">When do you want to achieve this?</div>
+                                </div>
+                                
+                                <!-- Target Value & Unit -->
+                                <div class="col-md-6">
+                                    <label for="target_value" class="form-label">
+                                        <i class="fas fa-bullseye me-2"></i>Target Value
+                                    </label>
+                                    <input type="number" class="form-control" id="target_value" name="target_value" 
+                                           step="0.1" min="0" placeholder="e.g., 15, 200, 5">
+                                    <div class="form-text">The number you want to reach (optional)</div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="unit" class="form-label">
+                                        <i class="fas fa-ruler me-2"></i>Unit
+                                    </label>
+                                    <select class="form-select" id="unit" name="unit">
+                                        <option value="">Choose unit...</option>
+                                        <option value="lbs">Pounds (lbs)</option>
+                                        <option value="kg">Kilograms (kg)</option>
+                                        <option value="miles">Miles</option>
+                                        <option value="km">Kilometers</option>
+                                        <option value="minutes">Minutes</option>
+                                        <option value="hours">Hours</option>
+                                        <option value="reps">Repetitions</option>
+                                        <option value="sets">Sets</option>
+                                        <option value="days">Days</option>
+                                        <option value="times">Times per week</option>
+                                        <option value="%">Percentage</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Description -->
+                                <div class="col-12">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-align-left me-2"></i>Description
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"
+                                              placeholder="Describe your goal in detail. What will achieving this mean to you? What's your plan?"></textarea>
+                                    <div class="form-text">Add motivation and your strategy (optional)</div>
+                                </div>
+                                
+                                <!-- Privacy Setting -->
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="is_public" name="is_public">
+                                        <label class="form-check-label" for="is_public">
+                                            <i class="fas fa-globe me-2"></i>Share this goal publicly
+                                        </label>
+                                        <div class="form-text">
+                                            <strong>Unchecked:</strong> Only you can see this goal<br>
+                                            <strong>Checked:</strong> Your friends can see this goal and cheer you on!
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Buttons -->
+                                <div class="col-12">
+                                    <div class="d-flex gap-3">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-save me-2"></i>Create Goal
+                                        </button>
+                                        <a href="{{ url_for('fitness_goals') }}" class="btn btn-outline-secondary btn-lg">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Goal Examples -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>Goal Examples & Tips
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Good Goals (SMART)</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <strong>Lose 15 pounds by June 1st</strong><br>
+                                        <small class="text-muted">Specific, measurable, time-bound</small>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <strong>Run 3 miles without stopping</strong><br>
+                                        <small class="text-muted">Clear achievement marker</small>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        <strong>Workout 4 times per week for 3 months</strong><br>
+                                        <small class="text-muted">Habit-building with timeframe</small>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-warning">Tips for Success</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-star text-warning me-2"></i>
+                                        <strong>Start Small</strong><br>
+                                        <small class="text-muted">Better to achieve small goals than fail big ones</small>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-star text-warning me-2"></i>
+                                        <strong>Be Specific</strong><br>
+                                        <small class="text-muted">Vague goals lead to vague results</small>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-star text-warning me-2"></i>
+                                        <strong>Share for Accountability</strong><br>
+                                        <small class="text-muted">Friends can help keep you motivated</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('target_date').setAttribute('min', today);
+    
+    // Auto-suggest units based on goal type
+    const goalTypeSelect = document.getElementById('goal_type');
+    const unitSelect = document.getElementById('unit');
+    
+    const unitSuggestions = {
+        'weight_loss': 'lbs',
+        'muscle_gain': 'lbs',
+        'strength': 'lbs',
+        'endurance': 'miles',
+        'flexibility': 'minutes',
+        'habit': 'times'
+    };
+    
+    goalTypeSelect.addEventListener('change', function() {
+        const suggestedUnit = unitSuggestions[this.value];
+        if (suggestedUnit) {
+            unitSelect.value = suggestedUnit;
+        }
+    });
+});
+</script>
+{% endblock %}

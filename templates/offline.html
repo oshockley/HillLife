@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Offline - Hill Life{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-mountain fa-5x text-muted mb-3"></i>
+                    <h1 class="display-4 fw-bold mb-3">You're Offline</h1>
+                    <p class="lead text-muted mb-4">
+                        Looks like you've lost your connection to the digital peaks! 
+                        Don't worry - you can still view your recent adventures below.
+                    </p>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-block">
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        <i class="fas fa-sync-alt me-2"></i>Try Again
+                    </button>
+                    <button onclick="history.back()" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cached Content -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Recent Adventures (Cached)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This content was saved from your last visit. New data will be available when you're back online.
+                        </p>
+                        <div id="cachedWorkouts">
+                            <!-- Cached workouts will be loaded here via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Load cached workouts from localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const cachedWorkouts = localStorage.getItem('hilllife_recent_workouts');
+    const container = document.getElementById('cachedWorkouts');
+    
+    if (cachedWorkouts) {
+        const workouts = JSON.parse(cachedWorkouts);
+        
+        if (workouts.length > 0) {
+            let html = '<div class="row g-3">';
+            
+            workouts.slice(0, 6).forEach(workout => {
+                html += `
+                    <div class="col-md-6">
+                        <div class="card border-left-primary">
+                            <div class="card-body">
+                                <h6 class="card-title">${workout.exercise}</h6>
+                                <p class="card-text small text-muted">
+                                    ${workout.duration} min • ${workout.sets} sets • ${workout.reps} reps
+                                    ${workout.calories ? ` • ${workout.calories} cal` : ''}
+                                </p>
+                                <small class="text-muted">${new Date(workout.date).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p class="text-muted">No cached adventures found.</p>';
+        }
+    } else {
+        container.innerHTML = '<p class="text-muted">No cached adventures found.</p>';
+    }
+});
+
+// Check for connection
+function checkConnection() {
+    if (navigator.onLine) {
+        window.location.reload();
+    }
+}
+
+// Listen for connection changes
+window.addEventListener('online', checkConnection);
+
+// Check connection every 30 seconds
+setInterval(checkConnection, 30000);
+</script>
+{% endblock %}

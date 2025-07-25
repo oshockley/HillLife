@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Register - FitTracker Pro{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-user-plus me-2"></i>JOIN THE ELITE
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" id="registerForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required 
+                                       placeholder="Choose your warrior name" minlength="3">
+                                <div class="form-text">Your unique identifier in the fitness arena</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required 
+                                       placeholder="your.email@domain.com">
+                                <div class="form-text">We'll send you victory updates</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required 
+                                       placeholder="Create an unbreakable password" minlength="6">
+                                <div class="password-strength">
+                                    <div class="progress mt-2" style="height: 4px;">
+                                        <div class="progress-bar" id="passwordStrength"></div>
+                                    </div>
+                                    <small class="form-text" id="passwordText">Make it strong like you</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required 
+                                       placeholder="Confirm your unbreakable password">
+                                <div class="form-text" id="passwordMatch"></div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3" id="submitBtn">
+                                <i class="fas fa-rocket me-2"></i>START DOMINATING NOW
+                            </button>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="mb-0 text-muted">Already crushing it?</p>
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>LOGIN HERE
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefits Card -->
+                <div class="card mt-4" style="background: var(--primary-gradient); color: white;">
+                    <div class="card-body p-4">
+                        <h5 class="card-title">
+                            <i class="fas fa-crown me-2"></i>ELITE MEMBER BENEFITS
+                        </h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2"></i>Unlimited workout tracking
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2"></i>Advanced analytics & insights
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2"></i>Data export capabilities
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-check-circle me-2"></i>24/7 performance tracking
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password strength checker
+    const password = document.getElementById('password');
+    const strengthBar = document.getElementById('passwordStrength');
+    const strengthText = document.getElementById('passwordText');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const passwordMatch = document.getElementById('passwordMatch');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        let feedback = [];
+
+        if (password.length >= 8) strength += 25;
+        else feedback.push('at least 8 characters');
+
+        if (/[a-z]/.test(password)) strength += 25;
+        else feedback.push('lowercase letter');
+
+        if (/[A-Z]/.test(password)) strength += 25;
+        else feedback.push('uppercase letter');
+
+        if (/[0-9]/.test(password)) strength += 25;
+        else feedback.push('number');
+
+        return { strength, feedback };
+    }
+
+    password.addEventListener('input', function() {
+        const result = checkPasswordStrength(this.value);
+        
+        strengthBar.style.width = result.strength + '%';
+        
+        if (result.strength < 50) {
+            strengthBar.className = 'progress-bar bg-danger';
+            strengthText.textContent = 'Weak - Add: ' + result.feedback.join(', ');
+        } else if (result.strength < 75) {
+            strengthBar.className = 'progress-bar bg-warning';
+            strengthText.textContent = 'Good - Getting stronger!';
+        } else {
+            strengthBar.className = 'progress-bar bg-success';
+            strengthText.textContent = 'BEAST MODE - Unbreakable!';
+        }
+    });
+
+    // Password confirmation
+    function checkPasswordMatch() {
+        if (confirmPassword.value === '') {
+            passwordMatch.textContent = '';
+            passwordMatch.className = 'form-text';
+        } else if (password.value === confirmPassword.value) {
+            passwordMatch.textContent = '✓ Passwords match - You\'re ready to dominate!';
+            passwordMatch.className = 'form-text text-success';
+        } else {
+            passwordMatch.textContent = '✗ Passwords don\'t match - Try again, champion!';
+            passwordMatch.className = 'form-text text-danger';
+        }
+    }
+
+    confirmPassword.addEventListener('input', checkPasswordMatch);
+    password.addEventListener('input', checkPasswordMatch);
+
+    // Form validation
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        if (password.value !== confirmPassword.value) {
+            e.preventDefault();
+            alert('Passwords don\'t match! Even champions need to double-check.');
+            return;
+        }
+
+        if (checkPasswordStrength(password.value).strength < 50) {
+            e.preventDefault();
+            alert('Password too weak! Champions need strong passwords.');
+            return;
+        }
+
+        // Loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>UNLEASHING YOUR POWER...';
+        submitBtn.disabled = true;
+    });
+
+    // Add focus effects
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.closest('.mb-3, .mb-4').style.transform = 'scale(1.02)';
+            this.closest('.mb-3, .mb-4').style.transition = 'all 0.3s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.closest('.mb-3, .mb-4').style.transform = 'scale(1)';
+        });
+    });
+</script>
+{% endblock %}

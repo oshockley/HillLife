@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Login - FitTracker Pro{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-sign-in-alt me-2"></i>LOGIN TO DOMINATE
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required 
+                                       placeholder="Enter your username">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required 
+                                       placeholder="Enter your password">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-bolt me-2"></i>UNLEASH YOUR POWER
+                            </button>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="mb-0 text-muted">Don't have an account?</p>
+                            <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>JOIN THE ELITE
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Motivational Quote -->
+                <div class="card mt-4" style="background: var(--success-gradient); color: white;">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-quote-left fa-2x mb-3 opacity-75"></i>
+                        <blockquote class="blockquote mb-3">
+                            <p class="mb-0 fs-5">"Champions aren't made in comfort zones. They're forged in the fire of relentless pursuit."</p>
+                        </blockquote>
+                        <footer class="blockquote-footer">
+                            <cite title="Source Title" class="opacity-75">FitTracker Pro</cite>
+                        </footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add focus effects
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.closest('.mb-3, .mb-4').style.transform = 'scale(1.02)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.closest('.mb-3, .mb-4').style.transform = 'scale(1)';
+        });
+    });
+
+    // Add loading state to submit button
+    document.querySelector('form').addEventListener('submit', function() {
+        const btn = this.querySelector('button[type="submit"]');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>CHARGING UP...';
+        btn.disabled = true;
+    });
+</script>
+{% endblock %}

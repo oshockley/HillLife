@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}Workouts - FitTracker Pro{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4" style="background: var(--dark-gradient); color: white;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-list me-3"></i>YOUR WORKOUT ARSENAL
+                </h1>
+                <p class="lead mb-0">Every rep recorded, every victory documented. Your fitness journey in numbers.</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('add_workout') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>ADD WORKOUT
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Workouts List -->
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-dumbbell me-2"></i>WORKOUT HISTORY
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('export_csv') }}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-download me-2"></i>EXPORT CSV
+                            </a>
+                        </div>
+                    </div>
+                    
+                    {% if workouts.items %}
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Exercise</th>
+                                            <th>Type</th>
+                                            <th>Sets × Reps</th>
+                                            <th>Weight/Speed</th>
+                                            <th>Duration</th>
+                                            <th>Calories</th>
+                                            <th>Extra</th>
+                                            <th>Date</th>
+                                            <th>Notes</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for workout in workouts.items %}
+                                        <tr class="workout-row">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="workout-icon me-3">
+                                                        {% if workout.workout_type == 'walking' %}
+                                                            <i class="fas fa-walking"></i>
+                                                        {% elif workout.workout_type == 'cardio' %}
+                                                            <i class="fas fa-heartbeat"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-dumbbell"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div>
+                                                        <strong class="text-primary">{{ workout.exercise_name }}</strong>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{% if workout.workout_type == 'walking' %}success{% elif workout.workout_type == 'cardio' %}info{% else %}primary{% endif %}">
+                                                    {{ (workout.workout_type or 'strength').upper() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if workout.workout_type in ['walking', 'cardio'] %}
+                                                    <span class="text-muted">-</span>
+                                                {% else %}
+                                                    <span class="badge bg-primary fs-6">{{ workout.sets }} × {{ workout.reps }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if workout.workout_type == 'walking' or workout.workout_type == 'cardio' %}
+                                                    {% if workout.speed %}
+                                                        <span class="fw-bold text-info">{{ workout.speed }} mph</span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% if workout.weight %}
+                                                        <span class="fw-bold text-success">{{ workout.weight }}kg</span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if workout.duration %}
+                                                    <i class="fas fa-clock text-primary me-1"></i>
+                                                    <span class="fw-bold">{{ workout.duration }}min</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if workout.calories_burned %}
+                                                    <i class="fas fa-fire text-danger me-1"></i>
+                                                    <span class="fw-bold">{{ "%.0f"|format(workout.calories_burned) }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if workout.workout_type == 'walking' %}
+                                                    {% if workout.incline %}
+                                                        <span class="badge bg-warning text-dark">{{ workout.incline }}% incline</span>
+                                                    {% elif workout.distance %}
+                                                        <span class="badge bg-info">{{ workout.distance }} mi</span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% elif workout.workout_type == 'cardio' %}
+                                                    {% if workout.avg_heart_rate %}
+                                                        <span class="badge bg-danger">{{ workout.avg_heart_rate }} BPM</span>
+                                                    {% elif workout.distance %}
+                                                        <span class="badge bg-info">{{ workout.distance }} mi</span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="text-center">
+                                                    <div class="fw-bold">{{ workout.date.strftime('%m/%d/%Y') }}</div>
+                                                    <small class="text-muted">{{ workout.date.strftime('%H:%M') }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if workout.notes %}
+                                                    <span class="badge bg-info" data-bs-toggle="tooltip" title="{{ workout.notes }}">
+                                                        <i class="fas fa-sticky-note"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('share_workout', workout_id=workout.id) }}" 
+                                                       class="btn btn-outline-success" data-bs-toggle="tooltip" title="Share">
+                                                        <i class="fas fa-share-alt"></i>
+                                                    </a>
+                                                    <a href="{{ url_for('edit_workout', workout_id=workout.id) }}" 
+                                                       class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            data-bs-toggle="modal" data-bs-target="#deleteModal{{ workout.id }}"
+                                                            data-bs-toggle="tooltip" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Delete Modal -->
+                                                <div class="modal fade" id="deleteModal{{ workout.id }}" tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-danger text-white">
+                                                                <h5 class="modal-title">
+                                                                    <i class="fas fa-exclamation-triangle me-2"></i>CONFIRM DELETION
+                                                                </h5>
+                                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p class="mb-3">Are you absolutely sure you want to delete this workout?</p>
+                                                                <div class="alert alert-warning">
+                                                                    <strong>{{ workout.exercise_name }}</strong><br>
+                                                                    {{ workout.sets }} sets × {{ workout.reps }} reps<br>
+                                                                    {{ workout.date.strftime('%B %d, %Y at %H:%M') }}
+                                                                </div>
+                                                                <p class="text-danger fw-bold">This action cannot be undone!</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                    <i class="fas fa-times me-2"></i>Cancel
+                                                                </button>
+                                                                <form method="POST" action="{{ url_for('delete_workout', workout_id=workout.id) }}" class="d-inline">
+                                                                    <button type="submit" class="btn btn-danger">
+                                                                        <i class="fas fa-trash me-2"></i>DELETE FOREVER
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if workouts.pages > 1 %}
+                        <div class="card-footer">
+                            <nav aria-label="Workout pagination">
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if workouts.has_prev %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('workouts', page=workouts.prev_num) }}">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in workouts.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != workouts.page %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ url_for('workouts', page=page_num) }}">{{ page_num }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if workouts.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('workouts', page=workouts.next_num) }}">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="card-body text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-dumbbell fa-5x text-muted mb-4"></i>
+                                <h3 class="text-muted mb-3">NO WORKOUTS LOGGED YET</h3>
+                                <p class="text-muted mb-4">Your fitness journey starts with the first rep. Time to dominate!</p>
+                                <a href="{{ url_for('add_workout') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-plus me-2"></i>LOG YOUR FIRST WORKOUT
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .workout-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .workout-row {
+        transition: all 0.3s ease;
+    }
+
+    .workout-row:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        font-weight: 500;
+        border: 2px solid transparent;
+        transition: var(--transition);
+    }
+
+    .page-link:hover {
+        background: var(--primary-gradient);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary-gradient);
+        border-color: transparent;
+    }
+
+    .badge {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-strong);
+    }
+
+    .modal-header {
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Add stagger animation to workout rows
+    document.querySelectorAll('.workout-row').forEach((row, index) => {
+        row.style.animationDelay = `${index * 0.05}s`;
+        row.classList.add('fade-in-up');
+    });
+
+    // Add confirmation for delete buttons
+    document.querySelectorAll('.btn-outline-danger').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // The modal will handle the confirmation
+            // This is just for additional visual feedback
+            this.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-trash"></i>';
+            }, 2000);
+        });
+    });
+
+    // Add loading state to form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>DELETING...';
+                btn.disabled = true;
+            }
+        });
+    });
+
+    // Auto-hide tooltips when modals open
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('show.bs.modal', function() {
+            tooltipList.forEach(tooltip => tooltip.hide());
+        });
+    });
+</script>
+{% endblock %}
