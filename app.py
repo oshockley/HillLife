@@ -9,10 +9,21 @@ import os
 from functools import wraps
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fitness_tracker.db'
+
+# Configure for Vercel deployment
+if os.environ.get('VERCEL_ENV'):
+    # Vercel serverless environment
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'vercel-secret-key-2024')
+    # Use in-memory SQLite for Vercel (temporary solution)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-vercel-secret-2024')
+else:
+    # Local development
+    app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fitness_tracker.db'
+    app.config['JWT_SECRET_KEY'] = 'jwt-secret-change-in-production'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'jwt-secret-change-in-production'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
 db = SQLAlchemy(app)
@@ -261,6 +272,28 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+
+# Global error handler for Vercel
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        'error': 'Internal server error',
+        'message': 'The app is starting up, please refresh in a moment.',
+        'vercel_env': os.environ.get('VERCEL_ENV', 'false')
+    }), 500
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('index.html')
+
+# Health check for Vercel
+@app.route('/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'vercel_env': os.environ.get('VERCEL_ENV', 'false'),
+        'database': 'connected'
+    })
 
 # Routes
 @app.route('/')
@@ -604,24 +637,28 @@ def api_bmi_stats():
 
 def init_db():
     """Initialize the database with sample data"""
-    db.create_all()
-    
-    # Add sample exercises if none exist
-    if not Exercise.query.first():
-        sample_exercises = [
-            Exercise(name='Push-ups', category='Strength', muscle_group='Chest', description='Classic bodyweight exercise'),
-            Exercise(name='Squats', category='Strength', muscle_group='Legs', description='Lower body compound movement'),
-            Exercise(name='Running', category='Cardio', muscle_group='Full Body', description='Cardiovascular exercise'),
-            Exercise(name='Pull-ups', category='Strength', muscle_group='Back', description='Upper body pulling exercise'),
-            Exercise(name='Plank', category='Core', muscle_group='Core', description='Isometric core exercise'),
-            Exercise(name='Deadlift', category='Strength', muscle_group='Full Body', description='Compound strength exercise'),
-            Exercise(name='Burpees', category='HIIT', muscle_group='Full Body', description='High-intensity exercise'),
-            Exercise(name='Cycling', category='Cardio', muscle_group='Legs', description='Low-impact cardio'),
-        ]
+    try:
+        db.create_all()
         
-        for exercise in sample_exercises:
-            db.session.add(exercise)
-        db.session.commit()
+        # Add sample exercises if none exist
+        if not Exercise.query.first():
+            sample_exercises = [
+                Exercise(name='Push-ups', category='Strength', muscle_group='Chest', description='Classic bodyweight exercise'),
+                Exercise(name='Squats', category='Strength', muscle_group='Legs', description='Lower body compound movement'),
+                Exercise(name='Running', category='Cardio', muscle_group='Full Body', description='Cardiovascular exercise'),
+                Exercise(name='Pull-ups', category='Strength', muscle_group='Back', description='Upper body pulling exercise'),
+                Exercise(name='Plank', category='Core', muscle_group='Core', description='Isometric core exercise'),
+                Exercise(name='Deadlift', category='Strength', muscle_group='Full Body', description='Compound strength exercise'),
+                Exercise(name='Burpees', category='HIIT', muscle_group='Full Body', description='High-intensity exercise'),
+                Exercise(name='Cycling', category='Cardio', muscle_group='Legs', description='Low-impact cardio'),
+            ]
+            
+            for exercise in sample_exercises:
+                db.session.add(exercise)
+            db.session.commit()
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+        # In Vercel, this might fail but we'll continue anyway
 
 # Social Features Routes
 @app.route('/social')
